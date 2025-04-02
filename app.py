@@ -335,7 +335,7 @@ elif page == "🤖 Prédiction IA":
     Ici, tu peux **tester l’adresse via un modèle d’intelligence artificielle entraîné sur des milliers de wallets**.
 
     Deux options :
-    - Charger un **fichier CSV avec plusieurs adresses** (colonnes générées automatiquement via l’outil “Générateur Dataset”)
+    - Charger un **fichier CSV avec plusieurs adresses** (colonnes générées automatiquement via l’outil “Générateur de Données”)
     - Tester une **adresse unique** directement depuis l’interface
 
     Le modèle IA retourne :
