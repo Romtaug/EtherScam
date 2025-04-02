@@ -292,7 +292,7 @@ if page == "⚙️ Générateur de Données":
         st.download_button(
             label="📥 Télécharger le dataset généré (CSV)",
             data=df_affichage.to_csv(index=False).encode("utf-8"),
-            file_name="dataset_ethereum.csv",
+            file_name="dataset_blockchain.csv",
             mime="text/csv"
         )
 
