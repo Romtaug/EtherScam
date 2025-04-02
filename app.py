@@ -597,7 +597,7 @@ elif page == "🤖 Prédiction IA":
 
             # === AFFICHAGE GROUPE 1
             explications1 = {
-                "- Résumé": "Ce résumé présente les **meilleurs paramètres** choisis automatiquement pour entraîner le modèle XGBoost à l'aide d'un gridSearch. On observe une **précision de 95,63%**, ce qui signifie que 95 transactions sur 100 sont bien classifiées. Le taux d’erreur est inférieur à 5%, ce qui est un excellent score en classification.",
+                "- Résumé": "Ce résumé présente les **meilleurs paramètres** choisis automatiquement pour entraîner le modèle XGBoost à l'aide d'un GridSearch. On observe une **précision de 95,63%**, ce qui signifie que 95 transactions sur 100 sont bien classifiées. Le taux d’erreur est inférieur à 5%, ce qui est un excellent score en classification.",
                 "- Jauge": "La jauge donne une représentation **visuelle immédiate de la précision du modèle**, ici à **96%**, ce qui est remarquable. Cette précision élevée montre que le modèle est **très performant pour distinguer un wallet Ethereum suspect d’un wallet légitime**, avec très peu de fausses alertes."
             }
             afficher_groupe(group1, "Meilleur Modèle & Précision", explications1)
