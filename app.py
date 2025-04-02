@@ -388,7 +388,7 @@ elif page == "🤖 Prédiction IA":
         st.stop()
 
     # 📤 Import du fichier CSV
-    uploaded_file = st.file_uploader("📤 Importer un fichier CSV à analyser :", type=["csv"])
+    uploaded_file = st.file_uploader("📤 Importer un fichier CSV à prédir :", type=["csv"])
 
     if uploaded_file:
         try:
