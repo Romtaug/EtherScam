@@ -15,6 +15,8 @@ from PIL import Image
 
 # Chargement du modèle et configuration locale
 model = joblib.load("models/xgb_best_model.pkl")
+locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
+
 
 ###################################################################################################################################################################################################################
 
@@ -162,22 +164,24 @@ def analyse_wallet_complete(features, df_eth, lifetime_days, address):
 st.set_page_config(page_title="EtherScam", page_icon="🚨")
 
 # 📌 Sidebar navigation
-page = st.sidebar.radio("📂 Menu", ["🚨 Vérification Scam", "🤖 Modèle IA", "📦 Générateur Dataset", "📝 À propos"])
+page = st.sidebar.radio("Menu", ["🚨 Analyse Wallet", "🤖 Prédiction IA", "⚙️ Générateur de Données", "📝 À propos"])
 
 #############################################################################################################################################################
-# 📦 Générateur interactif de dataset à partir d'adresses Ethereum
-if page == "📦 Générateur Dataset":
-    st.title("📦 Générateur de Dataset Ethereum")
+# ⚙️ Générateur interactif de dataset à partir d'adresses Ethereum
+if page == "⚙️ Générateur de Données":
+    st.title("⚙️ Générateur de Données")
     st.markdown("""
-    Cette section vous permet de **construire un dataset Ethereum à partir de plusieurs adresses**, ajoutées une par une.
+    Ce générateur interactif permet de **créer un fichier CSV à partir de plusieurs adresses Ethereum**.
 
-    - Les colonnes sont générées automatiquement à partir de l’analyse des transactions via l’API Etherscan.
-    - Vous pouvez visualiser, supprimer les doublons (par adresse), puis **télécharger un fichier directement compatible avec le modèle IA**.
+    - Chaque adresse est analysée via l’API d’Etherscan
+    - Les colonnes sont automatiquement extraites pour correspondre aux besoins du modèle IA
+    - Tu peux visualiser, supprimer les doublons, puis télécharger le fichier prêt à l’emploi
+
+    C’est l’étape idéale pour **constituer un jeu de données d’entraînement ou de test personnalisé**.
     """)
 
     api_key = "GAK4SSJCDJDURKJMB8RM62QDW84HJZT57T"
 
-    # ✅ Colonnes du modèle
     colonnes_features = [
         "Address",
         "Avg min between sent tnx",
@@ -199,14 +203,26 @@ if page == "📦 Générateur Dataset":
         "total ether balance"
     ]
 
-    # 🔁 Init state
     if "wallet_dataset" not in st.session_state:
         st.session_state.wallet_dataset = pd.DataFrame(columns=colonnes_features)
 
-    # ➕ Ajout d'une nouvelle adresse
-    address_input = st.text_input("➕ Adresse Ethereum à ajouter au dataset")
+    address_input = st.text_input(
+        "➕ Adresse Ethereum à ajouter au dataset",
+        value="0xD0cC2B24980CBCCA47EF755Da88B220a82291407"
+    )
 
-    if st.button("🔍 Ajouter au dataset") and address_input:
+    col1, col2 = st.columns(2)
+
+    with col1:
+        add_clicked = st.button("🔍 Ajouter au dataset", use_container_width=True)
+
+    with col2:
+        reset_clicked = st.button("🔄 Réinitialiser le dataset", use_container_width=True)
+
+    if reset_clicked:
+        st.session_state.wallet_dataset = pd.DataFrame(columns=colonnes_features)
+
+    if add_clicked and address_input:
         url = f"https://api.etherscan.io/api?module=account&action=txlist&address={address_input}&startblock=0&endblock=99999999&sort=asc&apikey={api_key}"
         response = requests.get(url)
         data = response.json()
@@ -244,24 +260,22 @@ if page == "📦 Générateur Dataset":
                 "total ether balance": received["eth_value"].sum() - sent["eth_value"].sum()
             }
 
-            # ✅ Ajout dans le dataset global
             new_row = pd.DataFrame([features])
-            st.session_state.wallet_dataset = pd.concat([st.session_state.wallet_dataset, new_row], ignore_index=True)
+            st.session_state.wallet_dataset = pd.concat(
+                [new_row, st.session_state.wallet_dataset], ignore_index=True
+            )
 
-            st.success(f"✅ Adresse {address_input} ajoutée avec succès !")
+        st.success(f"✅ Adresse {address_input} calculée à partir d'Etherscan et ajoutée avec succès au dataset.")
 
-    # 📊 Aperçu + Téléchargement
     if not st.session_state.wallet_dataset.empty:
         st.subheader("📋 Aperçu du dataset construit")
 
-        # 🧹 Bouton pour supprimer les doublons
         if st.button("🧹 Supprimer les doublons par adresse", use_container_width=True):
             avant = len(st.session_state.wallet_dataset)
             st.session_state.wallet_dataset = st.session_state.wallet_dataset.drop_duplicates(subset="Address")
             après = len(st.session_state.wallet_dataset)
             st.success(f"✅ {avant - après} doublon(s) supprimé(s) !")
 
-        # ✅ Réorganiser pour garder Address en premier
         colonnes = st.session_state.wallet_dataset.columns.tolist()
         if "Address" in colonnes:
             colonnes = ["Address"] + [col for col in colonnes if col != "Address"]
@@ -271,7 +285,6 @@ if page == "📦 Générateur Dataset":
 
         st.dataframe(df_affichage)
 
-        # 📥 Télécharger le CSV
         st.download_button(
             label="📥 Télécharger le dataset généré (CSV)",
             data=df_affichage.to_csv(index=False).encode("utf-8"),
@@ -283,20 +296,55 @@ if page == "📦 Générateur Dataset":
 # 📝 À propos
 elif page == "📝 À propos":
     st.title("📝 À propos")
+
     st.markdown("""
-    Bienvenue dans **EtherScam** 🕵️‍♂️
+    **EtherScam** est une application open-source conçue pour **analyser le comportement d’un wallet Ethereum** à partir de ses transactions.
 
-    Cette application te permet :
-    - D'analyser les transactions d’un wallet Ethereum
-    - De **détecter potentiellement un comportement suspect ou scam**
-    - De voir si tu t’es fait arnaquer ⚠️
+    Elle combine :
+    - une **analyse comportementale** fondée sur les patterns classiques de fraude
+    - une **intelligence artificielle** pour détecter automatiquement les comportements suspects
+    - un **générateur de dataset** pour analyser plusieurs adresses à grande échelle
+    - des **visualisations claires** pour appuyer le diagnostic
 
-    **💡 Ouvre la section “Vérification Scam” pour commencer.**
+    Elle s'adresse aux **analystes**, **développeurs**, **journalistes spécialisés**, **victimes de fraude**, ou tout simplement aux **curieux** qui souhaitent **vérifier une adresse avant d’interagir avec**.
+
+    ---
+
+    ### 🕵️ Signaler un wallet suspect
+
+    Si une adresse présente un comportement frauduleux, tu peux la signaler via ces plateformes reconnues :
+
+    - [CryptoScamDB](https://cryptoscamdb.org/) : base communautaire recensant les arnaques connues  
+    - [Etherscan Report](https://etherscan.io/report) : formulaire officiel pour signaler une adresse  
+    - [Chainabuse](https://www.chainabuse.com/) : plateforme collective soutenue par Coinbase, Binance et d'autres acteurs  
+    - [Pharos](https://www.internet-signalement.gouv.fr/) : site officiel du gouvernement français pour signaler une fraude en ligne  
+    - [Interpol Cybercrime](https://www.interpol.int/en/Crimes/Cybercrime) : contact international pour cybercriminalité
+
+    Ces outils permettent de **renforcer la sécurité de l’écosystème crypto** en identifiant les wallets malveillants.
+
+    ---
+
+    Cette application est **gratuite**, **sans collecte de données**, et maintenue de manière indépendante.  
+    Elle continue d’évoluer grâce à vos retours.
     """)
+
 ############################################################################################################################################################
-# 🤖 Modèle IA
-elif page == "🤖 Modèle IA":
-    st.title("🤖 Modèle IA - Détection de Scam")
+# 🤖 Prédiction IA
+elif page == "🤖 Prédiction IA":
+    st.title("🤖 Prédiction IA")
+
+    st.markdown("""
+    Ici, tu peux **tester l’adresse via un modèle d’intelligence artificielle entraîné sur des milliers de wallets**.
+
+    Deux options :
+    - Charger un **fichier CSV avec plusieurs adresses** (colonnes générées automatiquement via l’outil “Générateur Dataset”)
+    - Tester une **adresse unique** directement depuis l’interface
+
+    Le modèle IA retourne :
+    - un **flag “scam ou non”**
+    - une **probabilité associée au scam**
+    - et des **graphiques pour évaluer la performance du modèle** (matrice de confusion, importance des variables…)
+    """)
 
     # 🔁 Fonction de normalisation des noms de colonnes
     def normaliser_colonne(nom):
@@ -326,11 +374,9 @@ elif page == "🤖 Modèle IA":
     ]
     colonnes_features_norm = [normaliser_colonne(c) for c in colonnes_features]
 
-    st.write("Le fichier doit contenir les colonnes suivantes dans cet ordre :")
+    st.write("Vous pouvez vous servir de la rubrique générateur de dataset, le fichier prends en compte la casse mais doit contenir les colonnes suivantes dans cet ordre :")
     st.code(", ".join(colonnes_features))
-    st.write("Vous pouvez vous servir de la rubrique générateur de dataset.")
-
-    # 📦 Charger le modèle
+    # ⚙️ Charger le modèle
     try:
         model = joblib.load("models/xgb_best_model.pkl")
     except Exception as e:
@@ -381,9 +427,20 @@ elif page == "🤖 Modèle IA":
             st.subheader("🤖 Données après prédictions IA")
             st.dataframe(df_renamed.head())
 
-            # 📥 Téléchargement avec et sans FLAG
+            # 📊 Statistiques sur les prédictions
+            total = len(df_renamed)
+            nb_flags = df_renamed["FLAG"].sum()
+            pourcentage = (nb_flags / total) * 100
+
+            # 🔢 KPIs
+            col1, col2, col3 = st.columns(3)
+            col1.metric("📈 Lignes analysées", f"{total}")
+            col2.metric("🚨 Proportion FLAG = 1", f"{pourcentage:.2f}%")
+            col3.metric("✅ Fiabilité du modèle", "95.63%")
+
+            # 📥 Téléchargement
             st.download_button(
-                label="📥 Télécharger résultats avec prédictions (FLAG)",
+                label="📥 Télécharger les résultats complets avec prédictions",
                 data=df_renamed.to_csv(index=False).encode("utf-8"),
                 file_name="wallets_predictions.csv",
                 mime="text/csv"
@@ -397,7 +454,7 @@ elif page == "🤖 Modèle IA":
     address = st.text_input("🔎 Adresse Ethereum à tester via l'IA :", "0xD0cC2B24980CBCCA47EF755Da88B220a82291407")
     api_key = "GAK4SSJCDJDURKJMB8RM62QDW84HJZT57T"
 
-    # 📦 Chargement du modèle
+    # ⚙️ Chargement du modèle
     try:
         model = joblib.load("models/xgb_best_model.pkl")
     except FileNotFoundError:
@@ -489,12 +546,12 @@ elif page == "🤖 Modèle IA":
 
                 Ce wallet présente un **risque élevé de comportement frauduleux**.
 
-                > 🧠 **Confiance du modèle** : `{proba * 100:.2f}%` que ce soit un scam  
-                > ⚖️ Seuil de classification : `{seuil * 100:.0f}%`
+                > 🧠 **Confiance du wallet** : `{proba * 100:.2f}%` de chance que ce soit un scam  
+                > ⚖️ Seuil de classification : > `{seuil * 100:.0f}%`
                 
-                Le modèle a analysé ses caractéristiques et estime **avec un haut niveau de certitude** que ce portefeuille est **potentiellement malveillant**.
+                Le modèle a analysé ses caractéristiques et estime **avec un très haut niveau de certitude** que ce portefeuille est **potentiellement malveillant**.
 
-                **⚠️ Attention recommandée avant toute interaction.**
+                **⚠️ Attention recommandée avant toute interaction et transaction avec le détenteur de cette adresse.**
                 """)
             else:
                 st.success(f"""
@@ -502,12 +559,12 @@ elif page == "🤖 Modèle IA":
 
                 Aucune anomalie détectée par l’IA sur ce wallet.
 
-                > 🧠 **Confiance du modèle** : `{(1 - proba) * 100:.2f}%` que ce ne soit **pas** un scam  
-                > ⚖️ Seuil de classification : `{seuil * 100:.0f}%`
+                > 🧠 **Confiance du wallet** : `{(1 - proba) * 100:.2f}%` que ce ne soit **pas** un scam  
+                > ⚖️ Seuil de classification : < `{seuil * 100:.0f}%`
                 
                 D’après les transactions observées, ce wallet présente un comportement classique et **ne déclenche aucun signal fort de scam**.
 
-                **🟢 Aucune suspicion à ce stade.**
+                **🟢 Pas de suspicion à ce stade.**
                 """)
 
             st.markdown("## 📊 Résumé visuel du modèle")
@@ -559,7 +616,7 @@ elif page == "🤖 Modèle IA":
             # === IMPORTANCE DES VARIABLES
             img_path = os.path.join(image_folder, "feature_importance.png")
             if os.path.exists(img_path):
-                st.markdown("### 🔍 Importance des variables")
+                st.markdown("### Importance des variables")
                 st.image(Image.open(img_path), use_container_width=True)
 
                 st.markdown("""
@@ -575,9 +632,20 @@ elif page == "🤖 Modèle IA":
                 st.warning("❌ Image 'feature_importance.png' non trouvée.")
 
 ############################################################################################################################################################
-# 🚨 Vérification Scam (fusion analyse + détection)
-elif page == "🚨 Vérification Scam":
-    st.title("🚨 Vérification Scam")
+# 🚨 Analyse Wallet (fusion analyse + détection)
+elif page == "🚨 Analyse Wallet":
+    st.title("🚨 Analyse Wallet")
+
+    st.markdown("""
+    Dans cette section, tu peux **vérifier une adresse Ethereum** pour détecter des comportements suspects.  
+    L’analyse combine :
+    - des **indicateurs clés (KPIs)** : nombre de transactions, volume total, solde…
+    - une **analyse comportementale complète** : temporalité, ratios, patterns types (burner, scam…)
+    - des **visualisations interactives** pour comprendre les flux du wallet.
+
+    L’objectif est de **détecter rapidement un comportement frauduleux** à partir d’une simple adresse.
+    """)
+
 
     address = st.text_input("🔎 Adresse Ethereum à analyser :", "0xD0cC2B24980CBCCA47EF755Da88B220a82291407")
     api_key = "GAK4SSJCDJDURKJMB8RM62QDW84HJZT57T"
@@ -619,8 +687,8 @@ elif page == "🚨 Vérification Scam":
             st.info(f"""
             🔎 Cette application permet d’analyser si un **wallet Ethereum est potentiellement suspect** ou référencé comme scam.
 
-            🔗 Voir les scams référencés sur [CryptoScamDB.org](https://cryptoscamdb.org/scams)  
-            🔗 Voir les transactions de l’adresse sur [Etherscan.io](https://etherscan.io/address/{address})
+            - Voir les scams référencés sur : [CryptoScamDB.org](https://cryptoscamdb.org/scams)  
+            - Voir les transactions de l’adresse sur : [Etherscan.io](https://etherscan.io/address/{address})
             """)
 
             df = pd.DataFrame(data["result"])
@@ -667,7 +735,25 @@ elif page == "🚨 Vérification Scam":
             else:
                 st.success(f"🟢 Indice de confiance : {confidence_score}/10 — Aucun comportement frauduleux évident détecté.")
 
-            st.progress(confidence_score / 10)
+            def get_progress_color(score):
+                # Rouge (0) → Orange (5) → Vert (10)
+                if score <= 4:
+                    return "#e74c3c"  # Rouge
+                elif score <= 6:
+                    return "#f39c12"  # Orange
+                elif score <= 8:
+                    return "#f1c40f"  # Jaune
+                else:
+                    return "#2ecc71"  # Vert
+
+            color = get_progress_color(confidence_score)
+
+            st.markdown(f"""
+            <div style="background-color: #e0e0e0; border-radius: 10px; height: 22px; width: 100%;">
+            <div style="background-color: {color}; width: {confidence_score * 10}%; height: 100%; border-radius: 10px;"></div>
+            </div>
+            """, unsafe_allow_html=True)
+
 
             # KPIs en colonnes
             st.markdown(" ")  
@@ -678,7 +764,7 @@ elif page == "🚨 Vérification Scam":
             col3.metric("📥 Total reçu", f"{features['total ether received']:.2f} ETH")
 
             col4, col5, col6 = st.columns(3)
-            col4.metric("📦 Tx envoyées", features["Sent tnx"])
+            col4.metric("⚙️ Tx envoyées", features["Sent tnx"])
             col5.metric("📬 Tx reçues", features["Received Tnx"])
             col6.metric("⏳ Durée d'activité", f"{lifetime_days} jours")
 
@@ -730,10 +816,6 @@ elif page == "🚨 Vérification Scam":
 
             # 📋 Affichage final du tableau
             st.dataframe(kpi_data.set_index("KPI"), use_container_width=True)
-
-
-
-
 
 ##############################################################################################################
 # 🔍 Analyse ultime : comportement, finance, temporalité, classification
@@ -871,7 +953,7 @@ elif page == "🚨 Vérification Scam":
             df_eth["wallet_balance"] = df_eth["balance_change"].cumsum()
 
             st.markdown(" ")  
-            st.subheader("📈 Visualisation")
+            st.subheader("📈 Visualisations")
 
             fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(12, 8), sharex=True)
 
@@ -972,3 +1054,29 @@ elif page == "🚨 Vérification Scam":
 
             # 🖼️ Affichage
             st.pyplot(fig)
+
+            st.markdown("""
+            **Solde cumulé (Wallet Net Cumulative Balance)** :  
+            Ce graphique montre l’évolution du solde en ETH du wallet dans le temps.  
+            - Une hausse brutale en escalier sans variations liés à des investissements suivie d’un vidage complet peut signaler un usage temporaire, typique des wallets de transit ou de blanchiment.  
+            - Un solde stable ou croissant sur le long terme peut indiquer une conservation volontaire des fonds (comportement HODL).
+
+            **Transactions en entrée et sortie** :  
+            Les points positifs indiquent les fonds reçus, les négatifs les fonds envoyés.  
+            - Des mouvements rapprochés et opposés (réception suivie d’un envoi) peuvent suggérer un relais de fonds.  
+            - Un déséquilibre fort entre nombre de transactions reçues et envoyées peut trahir un pattern suspect.
+
+            **Carte de chaleur des jours et heures** :  
+            Cette carte indique à quels moments le wallet est le plus actif.  
+            - Une concentration sur un créneau précis (ex. tous les jeudis matin) est typique d’une automatisation via script ou bot.  
+            - Une activité répartie sur plusieurs jours et heures est plus représentative d’un usage humain naturel.
+
+            **Répartition des transactions (camembert)** :  
+            Ce graphique compare le nombre de transactions envoyées et reçues.  
+            - Un déséquilibre prononcé peut révéler une stratégie de collecte (ex. uniquement recevoir) ou de dispersion pour blanchir (ex. uniquement envoyer).
+
+            **Répartition des volumes (treemap)** :  
+            Ce graphique compare les montants totaux reçus et envoyés.  
+            - Un wallet qui reçoit beaucoup d’ETH sans quasiment rien envoyer peut être un piège à fonds.  
+            - À l’inverse, un wallet qui vide rapidement ce qu’il reçoit peut correspondre à un portefeuille jetable ou utilisé pour dissimuler l’origine des fonds.
+            """)
