@@ -341,7 +341,7 @@ elif page == "🤖 Prédiction IA":
     Ici, tu peux **tester l’adresse via un modèle d’intelligence artificielle entraîné sur des milliers de wallets**.
 
     Deux options :
-    - Charger un **fichier CSV avec plusieurs adresses** (colonnes générées automatiquement via la rubrique : "⚙️ Générateur de Données")
+    - Charger un **fichier CSV avec plusieurs adresses** (peut être généré automatiquement via la rubrique : [⚙️ Générateur de Données])
     - Tester une **adresse unique** directement depuis l’interface
 
     Le modèle IA retourne :
@@ -349,10 +349,6 @@ elif page == "🤖 Prédiction IA":
     - une **probabilité associée au scam**
     - et des **graphiques pour évaluer la performance du modèle** (matrice de confusion, importance des variables…)
     """)
-
-    if st.button("🔧 Aller au Générateur de Données"):
-        st.session_state["Menu"] = "⚙️ Générateur de Données"
-        st.experimental_rerun()
 
     # 🔁 Fonction de normalisation des noms de colonnes
     def normaliser_colonne(nom):
