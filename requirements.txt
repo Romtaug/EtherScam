@@ -1,0 +1,9 @@
+requests
+pandas
+numpy
+streamlit
+matplotlib
+seaborn
+squarify
+joblib
+Pillow
