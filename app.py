@@ -15,7 +15,6 @@ from PIL import Image
 
 # Chargement du modèle et configuration locale
 model = joblib.load("models/xgb_best_model.pkl")
-locale.setlocale(locale.LC_TIME, 'fr_FR.utf8')
 
 ###################################################################################################################################################################################################################
 
