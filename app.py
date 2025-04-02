@@ -388,7 +388,7 @@ elif page == "🤖 Prédiction IA":
         st.stop()
 
     # 📤 Import du fichier CSV
-    uploaded_file = st.file_uploader("📤 Importer un fichier CSV à prédir :", type=["csv"])
+    uploaded_file = st.file_uploader("📤 Importer un fichier CSV à prédire :", type=["csv"])
 
     if uploaded_file:
         try:
@@ -455,7 +455,7 @@ elif page == "🤖 Prédiction IA":
 
 ##################################################################################################################################
     # 📥 Adresse à tester
-    address = st.text_input("🔎 Adresse Ethereum à tester via l'IA :", "0xD0cC2B24980CBCCA47EF755Da88B220a82291407")
+    address = st.text_input("🔎 Adresse Ethereum à prédire :", "0xD0cC2B24980CBCCA47EF755Da88B220a82291407")
     api_key = "GAK4SSJCDJDURKJMB8RM62QDW84HJZT57T"
 
     # ⚙️ Chargement du modèle
