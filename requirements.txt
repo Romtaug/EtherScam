@@ -8,3 +8,5 @@ squarify
 joblib
 Pillow
 scikit-learn
+xgboost
+
