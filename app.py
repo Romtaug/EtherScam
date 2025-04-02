@@ -16,6 +16,8 @@ from PIL import Image
 # Chargement du modèle et configuration locale
 model = joblib.load("models/xgb_best_model.pkl")
 
+if "Menu" not in st.session_state:
+    st.session_state["Menu"] = "🚨 Analyse Wallet"  # ou autre valeur par défaut
 ###################################################################################################################################################################################################################
 
 def analyse_wallet_complete(features, df_eth, lifetime_days, address):
@@ -165,7 +167,8 @@ st.set_page_config(page_title="EtherScam", page_icon="🚨")
 page = st.sidebar.radio(
     "Menu",
     ["🚨 Analyse Wallet", "🤖 Prédiction IA", "⚙️ Générateur de Données", "📝 À propos"],
-    key="Menu"  # clé synchronisée
+    index=["🚨 Analyse Wallet", "🤖 Prédiction IA", "⚙️ Générateur de Données", "📝 À propos"].index(st.session_state["Menu"]),
+    key="Menu"
 )
 #############################################################################################################################################################
 # ⚙️ Générateur interactif de dataset à partir d'adresses Ethereum
