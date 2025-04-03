@@ -16,8 +16,8 @@ from PIL import Image
 # Chargement du modèle et configuration locale
 model = joblib.load("models/xgb_best_model.pkl")
 
-if "Menu" not in st.session_state:
-    st.session_state["Menu"] = "🚨 Analyse Wallet"  # ou autre valeur par défaut
+if "Etherscam" not in st.session_state:
+    st.session_state["Etherscam"] = "🚨 Analyse Wallet"  # ou autre valeur par défaut
 ###################################################################################################################################################################################################################
 
 def analyse_wallet_complete(features, df_eth, lifetime_days, address):
@@ -165,10 +165,10 @@ st.set_page_config(page_title="EtherScam", page_icon="🚨")
 
 # 📌 Sidebar navigation
 page = st.sidebar.radio(
-    "Menu",
+    "Etherscam",
     ["🚨 Analyse Wallet", "🤖 Prédiction IA", "⚙️ Générateur de Données", "📝 À propos"],
-    index=["🚨 Analyse Wallet", "🤖 Prédiction IA", "⚙️ Générateur de Données", "📝 À propos"].index(st.session_state["Menu"]),
-    key="Menu"
+    index=["🚨 Analyse Wallet", "🤖 Prédiction IA", "⚙️ Générateur de Données", "📝 À propos"].index(st.session_state["Etherscam"]),
+    key="Etherscam"
 )
 #############################################################################################################################################################
 # ⚙️ Générateur interactif de dataset à partir d'adresses Ethereum
@@ -388,7 +388,7 @@ elif page == "🤖 Prédiction IA":
         st.stop()
 
     # 📤 Import du fichier CSV
-    uploaded_file = st.file_uploader("📤 Importer un fichier CSV à prédire :", type=["csv"])
+    uploaded_file = st.file_uploader("📥 Importer un fichier CSV à prédire :", type=["csv"])
 
     if uploaded_file:
         try:
