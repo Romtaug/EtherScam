@@ -165,10 +165,10 @@ st.set_page_config(page_title="EtherScam", page_icon="🚨")
 
 # 📌 Sidebar navigation
 page = st.sidebar.radio(
-    "Etherscam",
+    "EtherScam",
     ["🚨 Analyse Wallet", "🤖 Prédiction IA", "⚙️ Générateur de Données", "📝 À propos"],
     index=["🚨 Analyse Wallet", "🤖 Prédiction IA", "⚙️ Générateur de Données", "📝 À propos"].index(st.session_state["Etherscam"]),
-    key="Etherscam"
+    key="EtherScam"
 )
 #############################################################################################################################################################
 # ⚙️ Générateur interactif de dataset à partir d'adresses Ethereum
