@@ -40,23 +40,23 @@ def analyse_wallet_complete(features, df_eth, lifetime_days, address):
 
     # ⏱️ Analyse temporelle
     if lifetime_days < 15:
-        diagnostics.append(f"🚨 Wallet actif depuis **{lifetime_days} jours seulement**. Très jeune, typique des scams temporaires.")
+        diagnostics.append(f"🚨 Wallet actif depuis **{lifetime_days} jours seulement**. Très jeune, typique des scams temporaires (-3)")
         danger_score += 3
     elif lifetime_days < 90:
-        diagnostics.append(f"📅 Wallet jeune (≈ {lifetime_days} jours). Historique limité, attention au contexte.")
+        diagnostics.append(f"📅 Wallet jeune (≈ {lifetime_days} jours). Historique limité, attention au contexte (-2)")
         danger_score += 2
     elif lifetime_days < 365:
-        diagnostics.append(f"🗓️ Wallet actif depuis moins d’un an : **{lifetime_days} jours**. Antériorité moyenne.")
+        diagnostics.append(f"🗓️ Wallet actif depuis moins d’un an : **{lifetime_days} jours**. Antériorité moyenne (-1)")
         danger_score += 1
     else:
         diagnostics.append(f"🕰️ Wallet actif depuis **{lifetime_days} jours**. Ancienneté rassurante.")
         if sent_sum > 300 and recv_sum > 300:
             diagnostics.append("📊 Forte activité financière sur longue période. Le wallet gère des volumes importants sur le long terme.")
         elif sent_sum > 300 and balance < 1:
-            diagnostics.append("🚨 Wallet très actif et ancien, mais totalement vidé. Dump / blanchiment / fuite de capitaux ?")
+            diagnostics.append("🚨 Wallet très actif et ancien, mais totalement vidé. Dump / blanchiment / fuite de capitaux ? (-2)")
             danger_score += 2
         elif recv_sum > 300 and sent_sum < 1:
-            diagnostics.append("🧲 Wallet ancien qui a reçu beaucoup sans rien envoyer. Potentiel piège à fonds ou cold storage.")
+            diagnostics.append("🧲 Wallet ancien qui a reçu beaucoup sans rien envoyer. Potentiel piège à fonds ou cold storage (-3)")
             danger_score += 3
 
     # ⏰ Comportement horaire
@@ -67,7 +67,7 @@ def analyse_wallet_complete(features, df_eth, lifetime_days, address):
     hour_freq = df_eth["hour"].value_counts(normalize=True).max()
 
     if hour_freq > 0.5:
-        diagnostics.append(f"🕔 Plus de 50% des transactions à **{most_active_hour}h**. Probable script ou bot.")
+        diagnostics.append(f"🕔 Plus de 50% des transactions à **{most_active_hour}h**. Probable script ou bot (-1)")
         danger_score += 1
     else:
         diagnostics.append(f"📈 Activité répartie : heure dominante = **{most_active_hour}h**.")
@@ -76,83 +76,83 @@ def analyse_wallet_complete(features, df_eth, lifetime_days, address):
 
     # 📤📥 Ratio tx
     if recv_count == 0 and sent_count > 0:
-        diagnostics.append("📤 Le wallet **n’a jamais reçu**, mais envoie. Relais ? Burner ?")
+        diagnostics.append("📤 Le wallet **n’a jamais reçu**, mais envoie. Relais ? Burner ? (-4)")
         danger_score += 4
     elif sent_count == 0 and recv_count > 0:
-        diagnostics.append("📥 Le wallet **ne fait que recevoir**. Attire des fonds ?")
+        diagnostics.append("📥 Le wallet **ne fait que recevoir**. Attire des fonds ? (-4)")
         danger_score += 4
     else:
         if tx_ratio > 10:
-            diagnostics.append("📈 Ratio tx >10 : ce wallet envoie beaucoup plus qu’il ne reçoit.")
+            diagnostics.append("📈 Ratio tx >10 : ce wallet envoie beaucoup plus qu’il ne reçoit (-2)")
             danger_score += 2
         elif tx_ratio < 0.1:
-            diagnostics.append("📉 Ratio tx <0.1 : reçoit beaucoup, envoie très peu. Collector ?")
+            diagnostics.append("📉 Ratio tx <0.1 : reçoit beaucoup, envoie très peu. Collector ? (-3)")
             danger_score += 3
         elif tx_ratio > 3:
-            diagnostics.append(f"📤 {tx_ratio:.2f}x plus d’envois que de réceptions.")
+            diagnostics.append(f"📤 {tx_ratio:.2f}x plus d’envois que de réceptions (-1)")
             danger_score += 1
         else:
             diagnostics.append("⚖️ Ratio tx équilibré.")
 
     # 💸 Solde final
     if balance < 0.0001 and recv_sum > 1:
-        diagnostics.append("💸 Wallet vidé malgré de grosses réceptions. Suspect.")
+        diagnostics.append("💸 Wallet vidé malgré de grosses réceptions. Suspect (-3)")
         danger_score += 3
     elif balance < 0.01:
-        diagnostics.append("🔄 Solde très faible. Wallet temporaire ?")
+        diagnostics.append("🔄 Solde très faible. Wallet temporaire ? (-1)")
         danger_score += 1
     else:
         if redistribution_ratio > 0.95:
-            diagnostics.append(f"🔁 Redistribution : **{redistribution_ratio*100:.2f}%** des fonds reçus sont sortis.")
+            diagnostics.append(f"🔁 Redistribution : **{redistribution_ratio*100:.2f}%** des fonds reçus sont sortis (-1)")
             danger_score += 1
         elif redistribution_ratio < 0.1:
             diagnostics.append("🔒 Wallet conserve ses fonds. HODL ?")
 
     # 📤 Fragmentation
     if avg_val_sent < avg_val_received * 0.5:
-        diagnostics.append(f"📤 Envois fragmentés ({avg_val_sent:.2f} ETH vs {avg_val_received:.2f} ETH reçus).")
+        diagnostics.append(f"📤 Envois fragmentés ({avg_val_sent:.2f} ETH vs {avg_val_received:.2f} ETH reçus) (-1).")
         danger_score += 1
 
     # 💥 Grosse tx
     if features["max value received"] > 250:
-        diagnostics.append("🧨 Transaction >250 ETH détectée. Gros flux ?")
+        diagnostics.append("🧨 Transaction >250 ETH détectée. Gros flux ? (-2)")
         danger_score += 2
 
     # 🔁 Pattern
     if sent_count > 50 and recv_count < 10:
-        diagnostics.append("📡 Pattern flooder : beaucoup d’envois, peu de réceptions.")
+        diagnostics.append("📡 Pattern flooder : beaucoup d’envois, peu de réceptions (-2)")
         profile_tags.append("Flooder")
         danger_score += 2
 
     if sent_to > 50 and balance < 1 and lifetime_days < 90:
-        diagnostics.append("🔥 Burner : jeune, balance vide, envoie à >50 adresses.")
+        diagnostics.append("🔥 Burner : jeune, balance vide, envoie à >50 adresses (-3)")
         profile_tags.append("Burner")
         danger_score += 3
 
     if recv_from > 30 and sent_count == 0:
-        diagnostics.append("🧲 Collector : reçoit beaucoup, n'envoie rien.")
+        diagnostics.append("🧲 Collector : reçoit beaucoup, n'envoie rien (-2)")
         profile_tags.append("Collector")
         danger_score += 2
 
     if recv_sum > 100 and sent_sum < 1:
-        diagnostics.append("🚩 Reçoit >100 ETH sans jamais renvoyer. Comportement SCAM-like.")
+        diagnostics.append("🚩 Reçoit >100 ETH sans jamais renvoyer. Comportement SCAM-like (-4)")
         profile_tags.append("Scam-like")
         danger_score += 4
 
     # 📊 Écart-type
     val_std = df_eth["eth_value"].std()
     if val_std > 10:
-        diagnostics.append(f"📉 Volatilité élevée : écart-type = {val_std:.2f} ETH.")
+        diagnostics.append(f"📉 Volatilité élevée : écart-type = {val_std:.2f} ETH (-1)")
         danger_score += 1
 
     # 😴 Faible activité
     if (recv_count + sent_count) < 5:
-        diagnostics.append("💤 Moins de 5 tx. Dormant ? Test ?")
+        diagnostics.append("💤 Moins de 5 tx. Dormant ? Test ? (-5)")
         profile_tags.append("Dormant")
 
     # ⚠️ Tx nulles
     if features["min val sent"] == 0.0 or features["min value received"] == 0.0:
-        diagnostics.append("⚠️ Transactions nulles (0 ETH) détectées.")
+        diagnostics.append("⚠️ Transactions nulles (0 ETH) détectées (-1)")
         danger_score += 1
 
     return danger_score, diagnostics, profile_tags
