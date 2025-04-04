@@ -689,7 +689,7 @@ elif page == "🚨 Analyse Wallet":
             st.success("✅ Analyse effectuée !")
             
             st.info(f"""
-            🔎 Cette application permet d’analyser si un **wallet Ethereum est potentiellement suspect** ou référencé comme scam.
+            🔎 Cette application permet d’analyser si un **wallet Ethereum est potentiellement suspect** ou classifié comme scam.
 
             - Voir les scams référencés sur : [CryptoScamDB.org](https://cryptoscamdb.org/scams)  
             - Voir les transactions de l’adresse sur : [Etherscan.io](https://etherscan.io/address/{address})
