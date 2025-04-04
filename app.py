@@ -341,7 +341,7 @@ elif page == "🤖 Prédiction IA":
     Ici, tu peux **tester l’adresse via un modèle d’intelligence artificielle entraîné sur des milliers de wallets**.
 
     Deux options :
-    - Charger un **fichier CSV avec plusieurs adresses** (peut être généré automatiquement via la rubrique : [⚙️ Générateur de Données])
+    - Charger un **fichier CSV avec plusieurs adresses** (peut être généré automatiquement via la rubrique : [⚙️ Générateur de Données]
     - Tester une **adresse unique** directement depuis l’interface
 
     Le modèle IA retourne :
@@ -680,7 +680,7 @@ elif page == "🚨 Analyse Wallet":
             st.error("❌ Adresse invalide ou aucune transaction trouvée sur Etherscan.")
 
             st.info(f"""
-            🔎 Cette application permet d’analyser si un **wallet Ethereum est potentiellement suspect** ou référencé comme scam.
+            🔎 Cette application permet d’analyser si un **wallet Ethereum est potentiellement suspect** ou classifié comme scam.
 
             🔗 Voir sur [CryptoScamDB.org](https://cryptoscamdb.org/scams)  
             🔗 Voir l’adresse sur [Etherscan.io](https://etherscan.io/address/{address})
