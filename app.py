@@ -345,7 +345,7 @@ elif page == "🤖 Prédiction IA":
     - Tester une **adresse unique** directement depuis l’interface
 
     Le modèle IA retourne :
-    - un **flag “scam ou non”**
+    - un **flag “scam (1) ou non (0)”**
     - une **probabilité associée au scam**
     - et des **graphiques pour évaluer la performance du modèle** (matrice de confusion, importance des variables…)
     """)
